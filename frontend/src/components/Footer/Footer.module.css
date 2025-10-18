@@ -1,0 +1,102 @@
+.footer {
+  background: #1e293b;
+  color: white;
+  padding: 60px 0 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.company h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #2563eb;
+}
+
+.company p {
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.links h4,
+.contact h4,
+.social h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: white;
+}
+
+.links a {
+  display: block;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  transition: color 0.3s ease;
+}
+
+.links a:hover {
+  color: #2563eb;
+}
+
+.contact p {
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.socialLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.socialLinks a {
+  color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.socialLinks a:hover {
+  color: #2563eb;
+}
+
+.bottom {
+  border-top: 1px solid #334155;
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.tilda {
+  color: #94a3b8;
+  transition: color 0.3s ease;
+}
+
+.tilda:hover {
+  color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
