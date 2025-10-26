@@ -175,3 +175,12 @@
     font-size: 11px;
   }
 }
+
+.active {
+  color: #2563eb !important; /* или ваш цвет акцента */
+  font-weight: 600;
+}
+
+.nav a:hover {
+  color: #2563eb; /* цвет при наведении */
+}

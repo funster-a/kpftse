@@ -1,23 +1,42 @@
 import React, { useState } from "react";
 import styles from "./Header.module.css";
+import { Link, useLocation } from "react-router-dom";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <a href="/" className={styles.logo}>
+        <Link to="/" className={styles.logo}>
           <img
             src="https://static.tildacdn.pro/tild3833-3565-4435-b631-356566613162/IMG_6442.PNG"
             alt="Техснабэлектрикс"
           />
-        </a>
+        </Link>
 
         <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ""}`}>
-          <a href="/tse">Главная</a>
-          <a href="#about">О нас</a>
-          <a href="/products">Продукция</a>
+          <Link 
+            to="/" 
+            className={location.pathname === "/" ? styles.active : ""}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Главная
+          </Link>
+          <a 
+            href="#about" 
+            onClick={() => setIsMenuOpen(false)}
+          >
+            О нас
+          </a>
+          <Link 
+            to="/catalog" 
+            className={location.pathname === "/catalog" ? styles.active : ""}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Продукция
+          </Link>
           <div className={styles.dropdown}>
             <span>Прайс</span>
             <div className={styles.dropdownContent}>
@@ -27,7 +46,12 @@ const Header: React.FC = () => {
               </a>
             </div>
           </div>
-          <a href="#contact">Контакты</a>
+          <a 
+            href="#contact" 
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Контакты
+          </a>
         </nav>
 
         <div className={styles.headerActions}>

@@ -1,7 +1,8 @@
 import React from "react";
-import styles from "./Products.module.css";
+import styles from "./ProductsPreview.module.css";
+import { Link } from "react-router-dom"; // Добавляем импорт
 
-const Products: React.FC = () => {
+const ProductsPreview: React.FC = () => {
   return (
     <section className={styles.products}>
       <div className={styles.container}>
@@ -12,9 +13,10 @@ const Products: React.FC = () => {
               для нефтегазовой отрасли, химического машиностроения, энергетики и
               металлургии и т.д.
             </p>
-            <a href="/products" className={styles.link}>
+            {/* Заменяем <a> на <Link> */}
+            <Link to="/catalog" className={styles.link}>
               Узнать больше
-            </a>
+            </Link>
           </div>
           <div className={styles.imageContainer}>
             <img
@@ -28,4 +30,4 @@ const Products: React.FC = () => {
   );
 };
 
-export default Products;
+export default ProductsPreview;
