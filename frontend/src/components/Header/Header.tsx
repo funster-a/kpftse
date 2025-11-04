@@ -9,7 +9,7 @@ const Header: React.FC = () => {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <Link to="/" className={styles.logo}>
+        <Link to="/kpftse" className={styles.logo}>
           <img
             src="https://static.tildacdn.pro/tild3833-3565-4435-b631-356566613162/IMG_6442.PNG"
             alt="Техснабэлектрикс"
@@ -18,17 +18,17 @@ const Header: React.FC = () => {
 
         <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ""}`}>
           <Link
-            to="/"
+            to="/kpftse"
             className={location.pathname === "/" ? styles.active : ""}
             onClick={() => setIsMenuOpen(false)}
           >
             Главная
           </Link>
-          <a href="/" onClick={() => setIsMenuOpen(false)}>
+          <a href="/kpftse" onClick={() => setIsMenuOpen(false)}>
             О нас
           </a>
           <Link
-            to="/catalog"
+            to="/kpftse/catalog"
             className={location.pathname === "/catalog" ? styles.active : ""}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -43,7 +43,7 @@ const Header: React.FC = () => {
               </a>
             </div>
           </div>
-          <a href="/" onClick={() => setIsMenuOpen(false)}>
+          <a href="/kpftse" onClick={() => setIsMenuOpen(false)}>
             Контакты
           </a>
         </nav>

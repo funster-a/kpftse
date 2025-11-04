@@ -7,7 +7,7 @@ import { HomePage } from "./pages/HomePage";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/kpftse">
       <div className="App">
         <Header />
         <main>
