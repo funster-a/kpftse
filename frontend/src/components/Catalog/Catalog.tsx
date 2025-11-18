@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import styles from "./Catalog.module.css";
-import { Card } from "../Card/Card";
 
 interface Product {
   id: number;
