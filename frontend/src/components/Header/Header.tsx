@@ -17,21 +17,22 @@ const Header: React.FC = () => {
         </Link>
 
         <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ""}`}>
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className={location.pathname === "/" ? styles.active : ""}
             onClick={() => setIsMenuOpen(false)}
           >
             Главная
           </Link>
-          <a 
-            href="#about" 
+          <Link
+            to="/about"
+            className={location.pathname === "/about" ? styles.active : ""}
             onClick={() => setIsMenuOpen(false)}
           >
             О нас
-          </a>
-          <Link 
-            to="/catalog" 
+          </Link>
+          <Link
+            to="/catalog"
             className={location.pathname === "/catalog" ? styles.active : ""}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -46,10 +47,7 @@ const Header: React.FC = () => {
               </a>
             </div>
           </div>
-          <a 
-            href="#contact" 
-            onClick={() => setIsMenuOpen(false)}
-          >
+          <a href="/3" onClick={() => setIsMenuOpen(false)}>
             Контакты
           </a>
         </nav>

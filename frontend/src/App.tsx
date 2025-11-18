@@ -1,40 +1,22 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
-import Hero from "./components/Hero/Hero";
-import Services from "./components/Services/Services";
-import Advantages from "./components/Advantages/Advantages";
-import Certificates from "./components/Certificates/Certificates";
-import Testimonials from "./components/Testimonials/Testimonials";
-import Partners from "./components/Partners/Partners";
-import Contact from "./components/Contact/Contact";
 import Footer from "./components/Footer/Footer";
 import CatalogPage from "./pages/CatalogPage";
-import ProductsPreview from "./components/ProductsPreview/ProductsPreview";
+import { HomePage } from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/kpftse">
       <div className="App">
         <Header />
         <main>
           <Routes>
-            {/* Главная страница */}
-            <Route path="/" element={
-              <>
-                <Hero />
-                <Services />
-                <Advantages />
-                <ProductsPreview />
-                <Certificates />
-                <Testimonials />
-                <Partners />
-                <Contact />
-              </>
-            } />
-            
-            {/* Отдельная страница каталога */}
+            <Route path="/" element={<HomePage />} />
+
             <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
         </main>
         <Footer />

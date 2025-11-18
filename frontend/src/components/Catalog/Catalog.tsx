@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import styles from "./Catalog.module.css";
+import { Card } from "../Card/Card";
 
 interface Product {
   id: number;
@@ -38,7 +39,7 @@ const Catalog: React.FC = () => {
     phone: "",
     email: "",
     company: "",
-    comment: ""
+    comment: "",
   });
 
   // Данные товаров
@@ -50,16 +51,17 @@ const Catalog: React.FC = () => {
       image: "https://via.placeholder.com/300x200",
       description: "Электродвигатель асинхронный трехфазный, мощность 1.5 кВт",
       price: "Цена по запросу",
-      inStock: true
+      inStock: true,
     },
     {
       id: 2,
       name: "Частотный преобразователь ESQ900",
       category: "frequency-converters",
       image: "https://via.placeholder.com/300x200",
-      description: "Преобразователь частоты для управления скоростью электродвигателей",
+      description:
+        "Преобразователь частоты для управления скоростью электродвигателей",
       price: "Цена по запросу",
-      inStock: true
+      inStock: true,
     },
     {
       id: 3,
@@ -68,7 +70,7 @@ const Catalog: React.FC = () => {
       image: "https://via.placeholder.com/300x200",
       description: "Магнитный пускатель для управления электродвигателями",
       price: "Цена по запросу",
-      inStock: false
+      inStock: false,
     },
     {
       id: 4,
@@ -162,38 +164,48 @@ const Catalog: React.FC = () => {
     try {
       const orderData = {
         ...formData,
-        products: selectedProducts
+        products: selectedProducts,
       };
 
       // TODO: Заменить на ваш бэкенд URL
-      const response = await fetch('http://localhost:8080/api/orders', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json'
+      const response = await fetch("http://localhost:8080/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderData),
       });
 
       if (response.ok) {
         clearSelection();
         setIsModalOpen(false);
-        setFormData({ name: "", phone: "", email: "", company: "", comment: "" });
-        alert('Заявка отправлена! Менеджер свяжется с вами в ближайшее время.');
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          company: "",
+          comment: "",
+        });
+        alert("Заявка отправлена! Менеджер свяжется с вами в ближайшее время.");
       } else {
-        throw new Error('Ошибка при отправке заявки');
+        throw new Error("Ошибка при отправке заявки");
       }
     } catch (error) {
-      console.error('Ошибка при отправке заявки:', error);
-      alert('Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам.');
+      console.error("Ошибка при отправке заявки:", error);
+      alert(
+        "Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -347,7 +359,7 @@ const Catalog: React.FC = () => {
         {/* Кнопка заявки */}
         {selectedProducts.length > 0 && (
           <div className={styles.floatingAction}>
-            <button 
+            <button
               onClick={() => setIsModalOpen(true)}
               className={styles.orderButton}
             >
@@ -375,7 +387,7 @@ const Catalog: React.FC = () => {
                 <div className={styles.selectedProducts}>
                   <h3>Выбранное оборудование:</h3>
                   <div className={styles.productsList}>
-                    {selectedProducts.map(product => (
+                    {selectedProducts.map((product) => (
                       <div key={product.id} className={styles.selectedProduct}>
                         <span>{product.name}</span>
                         <span>{product.price}</span>
@@ -455,7 +467,7 @@ const Catalog: React.FC = () => {
                     disabled={isSubmitting || selectedProducts.length === 0}
                     className={styles.submitButton}
                   >
-                    {isSubmitting ? 'Отправка...' : 'Отправить заявку'}
+                    {isSubmitting ? "Отправка..." : "Отправить заявку"}
                   </button>
                 </div>
               </form>
