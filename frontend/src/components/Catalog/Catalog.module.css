@@ -570,3 +570,29 @@
     margin: 1rem;
   }
 }
+
+
+/* В Catalog.module.css */
+
+/* Добавьте это, чтобы Link не выглядел как обычная ссылка */
+.productCardLink {
+  text-decoration: none; /* Убирает подчеркивание */
+  color: inherit; /* Наследует цвет текста */
+}
+
+/* Применяем стили карточки к контейнеру .productCard,
+   но теперь он внутри Link */
+.productCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%; /* Гарантируем, что карточка занимает всю высоту */
+}
+
+/* Стили наведения лучше применить к Link или классу productCardLink */
+.productCardLink:hover .productCard { /* Изменено */
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}

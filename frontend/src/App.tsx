@@ -1,3 +1,4 @@
+import React, { useState } from "react"; // Импортируем useState
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
@@ -5,8 +6,36 @@ import Footer from "./components/Footer/Footer";
 import CatalogPage from "./pages/CatalogPage";
 import { HomePage } from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
+import ProductPage from "./pages/ProductPage";
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  image: string;
+  description: string;
+  price: string;
+  inStock: boolean;
+}
 
 function App() {
+  // 1. Создаем состояние для хранения выбранных товаров (корзина/заявка)
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+
+  // 2. Функции для управления состоянием
+  const addToSelection = (product: Product) => {
+    setSelectedProducts((prev) => [...prev, product]);
+  };
+
+  const removeFromSelection = (productId: number) => {
+    setSelectedProducts((prev) => prev.filter((p) => p.id !== productId));
+  };
+
+  // Дополнительная функция для очистки корзины, если нужно (например, при отправке заявки)
+  const clearSelection = () => {
+    setSelectedProducts([]);
+  };
+
   return (
     <Router basename="/kpftse">
       <div className="App">
@@ -15,8 +44,33 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
 
-            <Route path="/catalog" element={<CatalogPage />} />
+            {/* 3. Передаем состояние и функции в CatalogPage */}
+            <Route
+              path="/catalog"
+              element={
+                <CatalogPage
+                  selectedProducts={selectedProducts}
+                  addToSelection={addToSelection}
+                  removeFromSelection={removeFromSelection}
+                  clearSelection={clearSelection}
+                />
+              }
+            />
+
+            {/* 4. Передаем состояние и функции в ProductPage */}
+            <Route
+              path="/catalog/:id"
+              element={
+                <ProductPage
+                  selectedProducts={selectedProducts}
+                  addToSelection={addToSelection}
+                  removeFromSelection={removeFromSelection}
+                />
+              }
+            />
+
             <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<h1>404 - Страница не найдена</h1>} />
           </Routes>
         </main>
         <Footer />
