@@ -1,7 +1,36 @@
-Full-stack project for local company
+# Техснабэлектрикс - Сайт компании
 
-TODO: 
-1.Landing page (need some fixes)
-2.About
-3.Shop page
-4.backend services
+Full-stack проект для компании Техснабэлектрикс.
+
+## Структура проекта
+
+- `frontend/` - React приложение (Vite)
+- `workers/` - Cloudflare Worker (API для Telegram бота и заявок)
+- `backend/` - Старый Node.js backend (не используется, можно удалить)
+
+## Быстрый старт
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend (Cloudflare Workers)
+```bash
+cd workers
+npm install
+npm run deploy
+```
+
+Подробная документация в `workers/README.md`
+
+## Основные возможности
+
+- ✅ Каталог товаров
+- ✅ Отправка заявок через формы
+- ✅ Интеграция с Telegram ботом
+- ✅ База данных заявок (Cloudflare D1)
+- ✅ Экспорт заявок в CSV
+- ✅ Управление заявками через Telegram бота

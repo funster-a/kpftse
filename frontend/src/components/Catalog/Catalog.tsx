@@ -213,8 +213,13 @@ const Catalog: React.FC<CatalogProps> = ({
         })),
       };
 
-      // TODO: Заменить на ваш бэкенд URL
-      const response = await fetch("http://localhost:8080/api/orders", {
+      // Отправка заявки на backend API
+      // Для Cloudflare Workers используйте: https://kpftse-telegram-api.your-subdomain.workers.dev
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+      
+      console.log('Отправка заявки на:', `${API_URL}/api/orders`);
+      
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -222,7 +227,31 @@ const Catalog: React.FC<CatalogProps> = ({
         body: JSON.stringify(orderData),
       });
 
-      if (response.ok) {
+      console.log('Ответ от сервера:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      // Парсим JSON ответ
+      let result;
+      try {
+        const text = await response.text();
+        console.log('Raw response text:', text);
+        result = JSON.parse(text);
+        console.log('Parsed result:', result);
+      } catch (parseError) {
+        console.error('Ошибка парсинга JSON ответа:', parseError);
+        // Если ответ успешный, но не JSON, считаем успехом
+        if (response.ok) {
+          result = { success: true };
+        } else {
+          throw new Error('Неверный формат ответа от сервера');
+        }
+      }
+
+      if (response.ok && (result.success || response.status === 200)) {
         // ⬅️ Используем пропс clearSelection
         clearSelection();
         setIsModalOpen(false);
@@ -235,13 +264,21 @@ const Catalog: React.FC<CatalogProps> = ({
         });
         alert("Заявка отправлена! Менеджер свяжется с вами в ближайшее время.");
       } else {
-        throw new Error("Ошибка при отправке заявки");
+        // Если есть сообщение об ошибке в ответе, используем его
+        const errorMessage = result.error || "Ошибка при отправке заявки";
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Ошибка при отправке заявки:", error);
-      alert(
-        "Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам."
-      );
+      console.error("Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      
+      // Показываем более понятное сообщение об ошибке
+      const errorMessage = error.message || "Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам.";
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
