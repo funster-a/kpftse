@@ -1,196 +1,80 @@
-# Cloudflare Worker для отправки заявок в Telegram
+# Cloudflare Worker для Telegram бота и заявок
 
-Этот проект использует Cloudflare Workers для отправки заявок из сайта в Telegram. Workers предоставляет бесплатный хостинг с хорошими лимитами.
+## Быстрый старт
 
-## Преимущества Cloudflare Workers
-
-- ✅ Бесплатный хостинг (100,000 запросов/день бесплатно)
-- ✅ Глобальная сеть CDN (быстрая работа по всему миру)
-- ✅ Автоматическое масштабирование
-- ✅ Не нужно управлять сервером
-- ✅ Интеграция с Cloudflare Pages
-
-## Установка
-
-1. Установите Wrangler CLI:
+### 1. Установка зависимостей
 ```bash
-npm install -g wrangler
-```
-
-2. Войдите в Cloudflare:
-```bash
-wrangler login
-```
-
-3. Установите зависимости:
-```bash
-cd workers
 npm install
 ```
 
-## Настройка
-
-### 1. Получите Telegram Bot Token
-
-1. Откройте [@BotFather](https://t.me/BotFather) в Telegram
-2. Отправьте `/newbot`
-3. Следуйте инструкциям и сохраните токен
-
-### 2. Получите Chat ID
-
-**Для личного чата:**
-- Начните диалог с вашим ботом
-- Отправьте любое сообщение
-- Используйте [@userinfobot](https://t.me/userinfobot) для получения Chat ID
-
-**Для группы:**
-- Добавьте бота в группу как администратора
-- Отправьте сообщение в группу
-- Используйте: `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates`
-
-### 3. Установите секреты в Cloudflare
-
+### 2. Настройка секретов
 ```bash
-# Установите токен бота
 wrangler secret put TELEGRAM_BOT_TOKEN
-# Введите токен когда попросит
-
-# Установите Chat ID
 wrangler secret put TELEGRAM_CHAT_ID
-# Введите Chat ID когда попросит
 ```
 
-## Разработка
-
-### Локальная разработка
-
-1. Создайте файл `.dev.vars` в папке `workers`:
-```env
-TELEGRAM_BOT_TOKEN=ваш_токен_бота
-TELEGRAM_CHAT_ID=ваш_chat_id
-```
-
-2. Запустите локальный сервер:
+### 3. Создание БД
 ```bash
-npm run dev
+wrangler d1 create kpftse-orders
+# Скопируйте database_id в wrangler.toml
 ```
 
-Worker будет доступен на `http://localhost:8787`
-
-### Тестирование
-
+### 4. Создание схемы БД
 ```bash
-# Health check
-curl http://localhost:8787/health
+wrangler d1 execute kpftse-orders --remote --command="CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT, company TEXT, comment TEXT, status TEXT DEFAULT 'new', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);"
+wrangler d1 execute kpftse-orders --remote --command="CREATE TABLE IF NOT EXISTS order_products (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, product_id INTEGER, product_name TEXT NOT NULL, product_price TEXT, FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE);"
+```
 
-# Тестовая заявка
-curl -X POST http://localhost:8787/api/orders \
+### 5. Настройка Webhook
+```bash
+curl -X POST "https://api.telegram.org/botYOUR_BOT_TOKEN/setWebhook" \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "Тест",
-    "phone": "+7 (777) 123-45-67",
-    "email": "test@example.com",
-    "company": "Тестовая компания",
-    "comment": "Тестовая заявка",
-    "products": [
-      {
-        "id": 1,
-        "name": "Тестовый товар",
-        "price": "1000 руб"
-      }
-    ]
-  }'
+  -d '{"url": "https://kpftse-telegram-api.300amiri.workers.dev/api/telegram-webhook"}'
 ```
 
-## Деплой
-
-### Продакшн
-
+### 6. Деплой
 ```bash
 npm run deploy
 ```
 
-После деплоя вы получите URL вида: `https://kpftse-telegram-api.your-subdomain.workers.dev`
+## API Endpoints
 
-### Staging
+- `POST /api/orders` - Создать заявку
+- `POST /api/contact` - Отправить контактную форму
+- `GET /api/orders` - Получить заявки (query: ?status=new&limit=10)
+- `GET /api/stats` - Статистика
+- `GET /api/export` - Экспорт заявок в CSV (query: ?status=new&startDate=2025-01-01&endDate=2025-12-31)
+- `PATCH /api/orders/:id` - Обновить статус
+- `POST /api/telegram-webhook` - Webhook для Telegram бота
+- `GET /health` - Проверка работоспособности
+
+## Команды Telegram бота
+
+- `/start` - Главное меню
+- `/orders` - Список заявок
+- `/stats` - Статистика
+- Кнопка "📥 Экспорт" - Экспорт заявок в CSV (выбор фильтра)
+
+## Локальная разработка
 
 ```bash
-npm run deploy:staging
+# Создайте .dev.vars
+TELEGRAM_BOT_TOKEN=ваш_токен
+TELEGRAM_CHAT_ID=ваш_chat_id
+
+# Запустите локально
+npm run dev
 ```
 
-## Просмотр логов
+## Полезные команды
 
 ```bash
+# Просмотр логов
 wrangler tail
+
+# Проверка БД
+wrangler d1 execute kpftse-orders --remote --command="SELECT * FROM orders;"
+
+# Проверка webhook
+curl "https://api.telegram.org/botYOUR_BOT_TOKEN/getWebhookInfo"
 ```
-
-## Настройка CORS
-
-В файле `src/index.js` обновите список разрешенных доменов:
-
-```javascript
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://your-domain.pages.dev', // Ваш домен Cloudflare Pages
-  'https://your-custom-domain.com', // Ваш кастомный домен
-];
-```
-
-## Интеграция с Frontend
-
-Обновите URL API в вашем фронтенде:
-
-```env
-# frontend/.env
-VITE_API_URL=https://kpftse-telegram-api.your-subdomain.workers.dev
-```
-
-Или в коде:
-
-```javascript
-const API_URL = 'https://kpftse-telegram-api.your-subdomain.workers.dev';
-```
-
-## Лимиты Cloudflare Workers (бесплатный план)
-
-- 100,000 запросов в день
-- 10ms CPU time на запрос (достаточно для отправки в Telegram)
-- 128MB памяти
-- 50ms timeout (достаточно для Telegram API)
-
-Для большинства сайтов этого более чем достаточно!
-
-## Обновление секретов
-
-```bash
-wrangler secret put TELEGRAM_BOT_TOKEN
-wrangler secret put TELEGRAM_CHAT_ID
-```
-
-## Устранение неполадок
-
-### Ошибка "chat not found"
-
-1. Проверьте правильность Chat ID
-2. Убедитесь, что бот добавлен в группу (если это группа)
-3. Убедитесь, что вы начали диалог с ботом (если это личный чат)
-
-### CORS ошибки
-
-Обновите список `allowedOrigins` в `src/index.js` с вашим доменом.
-
-### Проверка логов
-
-```bash
-wrangler tail --format pretty
-```
-
-## Миграция с Node.js backend
-
-Если у вас был Node.js backend:
-
-1. Удалите папку `backend/` (или оставьте для справки)
-2. Обновите `VITE_API_URL` в frontend на URL вашего Worker
-3. Деплойте Worker
-4. Готово! 🎉
-

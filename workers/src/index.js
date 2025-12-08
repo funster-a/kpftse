@@ -2,10 +2,21 @@
  * Cloudflare Worker для отправки заявок в Telegram
  */
 
+import { saveOrder, getOrders, getOrderById, updateOrderStatus, getOrdersStats } from './database.js';
+import { 
+  handleStart, 
+  handleOrders, 
+  handleOrderView, 
+  handleStatusChange, 
+  handleStats, 
+  handleCallbackQuery 
+} from './telegram-bot.js';
+import { ordersToCSV, getOrdersForExport } from './export.js';
+
 /**
  * Экранирует специальные символы Markdown для Telegram
  */
-function escapeMarkdown(text) {
+export function escapeMarkdown(text) {
   if (!text) return '';
   return String(text)
     .replace(/\*/g, '\\*')
@@ -31,7 +42,7 @@ function escapeMarkdown(text) {
 /**
  * Форматирует данные заявки в красивое сообщение для Telegram
  */
-function formatOrderMessage(orderData) {
+export function formatOrderMessage(orderData) {
   const date = new Date().toLocaleString('ru-RU', {
     year: 'numeric',
     month: '2-digit',
@@ -232,12 +243,121 @@ export default {
 
     // Health check
     if (path === '/health' && request.method === 'GET') {
-      return new Response(JSON.stringify({ 
-        status: 'ok', 
-        message: 'Cloudflare Worker is running' 
-      }), {
-        headers: { 'Content-Type': 'application/json' },
+      const health = {
+        status: 'ok',
+        message: 'Cloudflare Worker is running',
+        hasDatabase: !!env.DB,
+        hasTelegramToken: !!env.TELEGRAM_BOT_TOKEN,
+        hasChatId: !!env.TELEGRAM_CHAT_ID
+      };
+      
+      return new Response(JSON.stringify(health), {
+        headers: handleCORS(request),
       });
+    }
+
+    // API для получения заявок (GET /api/orders)
+    if (path === '/api/orders' && request.method === 'GET') {
+      if (!env.DB) {
+        return new Response(JSON.stringify({ 
+          error: 'База данных не настроена' 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
+
+      try {
+        const url = new URL(request.url);
+        const status = url.searchParams.get('status');
+        const limit = parseInt(url.searchParams.get('limit') || '50');
+        const offset = parseInt(url.searchParams.get('offset') || '0');
+
+        const result = await getOrders(env.DB, { status, limit, offset });
+        
+        return new Response(JSON.stringify(result), {
+          status: 200,
+          headers: handleCORS(request),
+        });
+      } catch (error) {
+        console.error('Ошибка при получении заявок:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Ошибка при получении заявок',
+          details: error.message 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
+    }
+
+    // API для получения статистики
+    if (path === '/api/stats' && request.method === 'GET') {
+      if (!env.DB) {
+        return new Response(JSON.stringify({ 
+          error: 'База данных не настроена' 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
+
+      try {
+        const result = await getOrdersStats(env.DB);
+        return new Response(JSON.stringify(result), {
+          status: 200,
+          headers: handleCORS(request),
+        });
+      } catch (error) {
+        console.error('Ошибка при получении статистики:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Ошибка при получении статистики' 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
+    }
+
+    // API для обновления статуса заявки
+    if (path.startsWith('/api/orders/') && request.method === 'PATCH') {
+      if (!env.DB) {
+        return new Response(JSON.stringify({ 
+          error: 'База данных не настроена' 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
+
+      try {
+        const orderId = parseInt(path.split('/').pop());
+        const { status } = await request.json();
+
+        if (!status) {
+          return new Response(JSON.stringify({ 
+            error: 'Статус не указан' 
+          }), {
+            status: 400,
+            headers: handleCORS(request),
+          });
+        }
+
+        const result = await updateOrderStatus(env.DB, orderId, status);
+        
+        return new Response(JSON.stringify(result), {
+          status: result.success ? 200 : 404,
+          headers: handleCORS(request),
+        });
+      } catch (error) {
+        console.error('Ошибка при обновлении статуса:', error);
+        return new Response(JSON.stringify({ 
+          error: 'Ошибка при обновлении статуса' 
+        }), {
+          status: 500,
+          headers: handleCORS(request),
+        });
+      }
     }
 
     // Проверка наличия токена и chat ID
@@ -271,19 +391,34 @@ export default {
           });
         }
 
+        // Сохраняем в базу данных (если БД настроена)
+        let orderId = null;
+        if (env.DB) {
+          try {
+            const saveResult = await saveOrder(env.DB, orderData);
+            orderId = saveResult.orderId;
+            console.log('Заявка сохранена в БД, ID:', orderId);
+          } catch (dbError) {
+            console.error('Ошибка при сохранении в БД (продолжаем отправку в Telegram):', dbError);
+            // Продолжаем даже если БД недоступна
+          }
+        }
+
         // Форматирование и отправка
         const message = formatOrderMessage(orderData);
         console.log('Sending order to Telegram:', {
           hasToken: !!env.TELEGRAM_BOT_TOKEN,
           hasChatId: !!env.TELEGRAM_CHAT_ID,
           chatId: env.TELEGRAM_CHAT_ID,
-          messageLength: message.length
+          messageLength: message.length,
+          orderId
         });
         await sendToTelegram(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID);
 
         return new Response(JSON.stringify({ 
           success: true, 
-          message: 'Заявка успешно отправлена менеджеру' 
+          message: 'Заявка успешно отправлена менеджеру',
+          orderId
         }), {
           status: 200,
           headers: handleCORS(request),
@@ -369,19 +504,34 @@ export default {
           products: []
         };
 
+         // Сохраняем в базу данных (если БД настроена)
+         let orderId = null;
+         if (env.DB) {
+           try {
+             const saveResult = await saveOrder(env.DB, orderData);
+             orderId = saveResult.orderId;
+             console.log('Заявка сохранена в БД, ID:', orderId);
+           } catch (dbError) {
+             console.error('Ошибка при сохранении в БД (продолжаем отправку в Telegram):', dbError);
+             // Продолжаем даже если БД недоступна
+           }
+         }
+
          // Форматирование и отправка
          const message = formatOrderMessage(orderData);
          console.log('Sending contact to Telegram:', {
            hasToken: !!env.TELEGRAM_BOT_TOKEN,
            hasChatId: !!env.TELEGRAM_CHAT_ID,
            chatId: env.TELEGRAM_CHAT_ID,
-           messageLength: message.length
+           messageLength: message.length,
+           orderId
          });
          await sendToTelegram(message, env.TELEGRAM_BOT_TOKEN, env.TELEGRAM_CHAT_ID);
 
          return new Response(JSON.stringify({ 
            success: true, 
-           message: 'Заявка успешно отправлена менеджеру' 
+           message: 'Заявка успешно отправлена менеджеру',
+           orderId
          }), {
            status: 200,
            headers: handleCORS(request),
@@ -421,6 +571,105 @@ export default {
          }), {
            status: statusCode,
            headers: handleCORS(request),
+         });
+       }
+     }
+
+     // Webhook для Telegram бота
+     if (path === '/api/telegram-webhook' && request.method === 'POST') {
+       try {
+         const update = await request.json();
+         
+         // Проверяем наличие БД и токена
+         if (!env.DB || !env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+           console.error('Telegram bot не настроен полностью');
+           return new Response(JSON.stringify({ ok: true }), {
+             status: 200,
+             headers: { 'Content-Type': 'application/json' },
+           });
+         }
+
+         // Обработка сообщений (команды)
+         if (update.message) {
+           const message = update.message;
+           const chatId = message.chat.id;
+           const text = message.text || '';
+
+           console.log('Получено сообщение:', { chatId, text, hasDB: !!env.DB });
+
+           // Проверяем, что сообщение от авторизованного пользователя
+           const allowedChatId = String(env.TELEGRAM_CHAT_ID);
+           if (String(chatId) !== allowedChatId) {
+             console.log(`Игнорируем сообщение от неавторизованного пользователя: ${chatId}`);
+             return new Response(JSON.stringify({ ok: true }), {
+               status: 200,
+               headers: { 'Content-Type': 'application/json' },
+             });
+           }
+
+           // Обработка команд
+           if (text.startsWith('/start')) {
+             await handleStart(env.TELEGRAM_BOT_TOKEN, chatId);
+           } else if (text.startsWith('/orders')) {
+             const parts = text.split(' ');
+             const status = parts[1] || null;
+             console.log('Обработка команды /orders, статус:', status);
+             await handleOrders(env.TELEGRAM_BOT_TOKEN, chatId, env.DB, status);
+           } else if (text.startsWith('/stats')) {
+             console.log('Обработка команды /stats');
+             await handleStats(env.TELEGRAM_BOT_TOKEN, chatId, env.DB);
+           } else if (text.startsWith('/export')) {
+             // Экспорт будет реализован позже
+             await sendToTelegram(
+               '📥 *Экспорт заявок*\n\n' +
+               'Функция экспорта будет доступна в следующей версии.\n' +
+               'Пока используйте API: GET /api/orders?status=new',
+               env.TELEGRAM_BOT_TOKEN,
+               chatId
+             );
+           }
+         }
+
+         // Обработка callback query (нажатия на кнопки)
+         if (update.callback_query) {
+           const callbackQuery = update.callback_query;
+           const chatId = callbackQuery.message.chat.id;
+
+           console.log('Получен callback query:', { 
+             chatId, 
+             data: callbackQuery.data,
+             hasDB: !!env.DB 
+           });
+
+           // Проверяем авторизацию
+           const allowedChatId = String(env.TELEGRAM_CHAT_ID);
+           if (String(chatId) !== allowedChatId) {
+             console.log(`Игнорируем callback от неавторизованного пользователя: ${chatId}`);
+             return new Response(JSON.stringify({ ok: true }), {
+               status: 200,
+               headers: { 'Content-Type': 'application/json' },
+             });
+           }
+
+           await handleCallbackQuery(
+             env.TELEGRAM_BOT_TOKEN,
+             chatId,
+             env.DB,
+             callbackQuery
+           );
+         }
+
+         // Всегда возвращаем успешный ответ Telegram
+         return new Response(JSON.stringify({ ok: true }), {
+           status: 200,
+           headers: { 'Content-Type': 'application/json' },
+         });
+       } catch (error) {
+         console.error('Ошибка при обработке webhook:', error);
+         // Все равно возвращаем успех, чтобы Telegram не повторял запрос
+         return new Response(JSON.stringify({ ok: true }), {
+           status: 200,
+           headers: { 'Content-Type': 'application/json' },
          });
        }
      }

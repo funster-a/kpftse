@@ -2,6 +2,12 @@ name = "kpftse-telegram-api"
 main = "src/index.js"
 compatibility_date = "2024-01-01"
 
+# База данных D1
+[[d1_databases]]
+binding = "DB"
+database_name = "kpftse-orders"
+database_id = "460b9289-3120-4fe1-9302-6555bdebf8c4" # Заполнится после создания БД
+
 # Переменные окружения (секреты устанавливаются через wrangler secret put)
 # TELEGRAM_BOT_TOKEN - установите через: wrangler secret put TELEGRAM_BOT_TOKEN
 # TELEGRAM_CHAT_ID - установите через: wrangler secret put TELEGRAM_CHAT_ID
