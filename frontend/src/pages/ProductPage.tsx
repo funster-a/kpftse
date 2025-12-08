@@ -1,20 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import styles from "../components/Catalog/Catalog.module.css"; // Используем стили из Catalog
+import styles from "./ProductPage.module.css";
 
 // --- Интерфейсы и заглушка данных (как в предыдущем ответе) ---
 
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  description: string;
-  price: string;
-  inStock: boolean;
-  fullDescription: string;
-  features: string[];
-}
+import type { Product } from "../components/Catalog/Catalog";
 
 interface ProductPageProps {
   selectedProducts: Product[];
@@ -25,7 +15,7 @@ interface ProductPageProps {
 // Заглушка данных (должна быть доступна для ProductPage)
 const mockProducts: Product[] = [
   {
-    id: 6,
+    id: 1,
     name: "Электродвигатель АИР 80А2",
     category: "electric-motors",
     image: "https://via.placeholder.com/600x400",
@@ -33,15 +23,106 @@ const mockProducts: Product[] = [
     price: "Цена по запросу",
     inStock: true,
     fullDescription:
-      "Трехфазный асинхронный электродвигатель серии АИР с короткозамкнутым ротором. Предназначен для привода механизмов, не требующих регулирования частоты вращения.",
+      "Трехфазный асинхронный электродвигатель серии АИР с короткозамкнутым ротором. Предназначен для привода механизмов, не требующих регулирования частоты вращения. Изготовлен в соответствии с ГОСТ 51689-2000. Обладает высокой надежностью и энергоэффективностью.",
     features: [
       "Мощность: 1.5 кВт",
       "Напряжение: 380 В",
       "Обороты: 3000 об/мин",
       "Степень защиты: IP54",
+      "Класс изоляции: F",
+      "КПД: 78%",
     ],
   },
-  // ... другие товары
+  {
+    id: 2,
+    name: "Частотный преобразователь ESQ900",
+    category: "frequency-converters",
+    image: "https://via.placeholder.com/600x400",
+    description:
+      "Преобразователь частоты для управления скоростью электродвигателей",
+    price: "Цена по запросу",
+    inStock: true,
+    fullDescription:
+      "Современный частотный преобразователь для плавного управления скоростью асинхронных электродвигателей. Обеспечивает экономию электроэнергии до 50% и продлевает срок службы оборудования.",
+    features: [
+      "Мощность: до 7.5 кВт",
+      "Диапазон частот: 0-400 Гц",
+      "Напряжение: 220/380 В",
+      "Защита: IP20",
+      "Режимы управления: скалярный, векторный",
+    ],
+  },
+  {
+    id: 3,
+    name: "Пускатель ПМЛ 1100",
+    category: "starters",
+    image: "https://via.placeholder.com/600x400",
+    description: "Магнитный пускатель для управления электродвигателями",
+    price: "Цена по запросу",
+    inStock: false,
+    fullDescription:
+      "Магнитный пускатель серии ПМЛ для дистанционного управления трехфазными асинхронными электродвигателями. Обеспечивает защиту от перегрузок и коротких замыканий.",
+    features: [
+      "Номинальный ток: 25 А",
+      "Напряжение катушки: 220 В",
+      "Степень защиты: IP54",
+      "Количество контактов: 3NO",
+    ],
+  },
+  {
+    id: 4,
+    name: "Реле контроля напряжения РН-113",
+    category: "relays",
+    image: "https://via.placeholder.com/600x400",
+    description: "Реле для защиты оборудования от перепадов напряжения",
+    price: "Цена по запросу",
+    inStock: true,
+    fullDescription:
+      "Реле контроля напряжения для защиты однофазных и трехфазных сетей от недопустимых отклонений напряжения. Автоматически отключает нагрузку при выходе напряжения за допустимые пределы.",
+    features: [
+      "Диапазон напряжения: 100-400 В",
+      "Время срабатывания: 0.1-10 с",
+      "Ток нагрузки: до 16 А",
+      "Точность: ±2%",
+    ],
+  },
+  {
+    id: 5,
+    name: "Электродвигатель АИР 90L4",
+    category: "electric-motors",
+    image: "https://via.placeholder.com/600x400",
+    description:
+      "Электродвигатель асинхронный трехфазный, мощность 2.2 кВт",
+    price: "Цена по запросу",
+    inStock: true,
+    fullDescription:
+      "Трехфазный асинхронный электродвигатель серии АИР с короткозамкнутым ротором. Предназначен для привода механизмов, не требующих регулирования частоты вращения.",
+    features: [
+      "Мощность: 2.2 кВт",
+      "Напряжение: 380 В",
+      "Обороты: 1500 об/мин",
+      "Степень защиты: IP54",
+      "Класс изоляции: F",
+      "КПД: 82%",
+    ],
+  },
+  {
+    id: 6,
+    name: "Кабель ВВГнг 3х2.5",
+    category: "cables",
+    image: "https://via.placeholder.com/600x400",
+    description: "Кабель силовой медный с ПВХ изоляцией",
+    price: "Цена по запросу",
+    inStock: true,
+    fullDescription:
+      "Силовой кабель с медными жилами и ПВХ изоляцией. Не распространяет горение, предназначен для прокладки в сухих и влажных помещениях, каналах, туннелях.",
+    features: [
+      "Сечение: 3×2.5 мм²",
+      "Напряжение: до 660 В",
+      "Температура: -50°C до +50°C",
+      "Стандарт: ГОСТ 31996-2012",
+    ],
+  },
 ];
 
 // --- Компонент ProductPage ---
@@ -53,17 +134,31 @@ const ProductPage: React.FC<ProductPageProps> = ({
 }) => {
   const { id } = useParams<{ id: string }>();
   const productId = parseInt(id || "", 10);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const product = mockProducts.find((p) => p.id === productId);
 
+  // Генерируем несколько изображений для галереи (в реальном приложении это будут реальные изображения)
+  const productImages = [
+    product?.image || "https://via.placeholder.com/600x400",
+    "https://via.placeholder.com/600x400?text=Image+2",
+    "https://via.placeholder.com/600x400?text=Image+3",
+    "https://via.placeholder.com/600x400?text=Image+4",
+  ];
+
   if (!product) {
     return (
-      <div className="container" style={{ padding: "60px 20px" }}>
-        <h1 style={{ textAlign: "center" }}>😔 Товар не найден</h1>
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          <Link to="/catalog">Вернуться в каталог</Link>
-        </p>
-      </div>
+      <section className={styles.productPage}>
+        <div className={styles.container}>
+          <div className={styles.notFound}>
+            <h1>😔 Товар не найден</h1>
+            <p>К сожалению, товар с таким ID не существует</p>
+            <Link to="/catalog" className={styles.backLink}>
+              ← Вернуться в каталог
+            </Link>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -79,140 +174,83 @@ const ProductPage: React.FC<ProductPageProps> = ({
   };
 
   return (
-    <section className={styles.catalog} style={{ padding: "60px 0" }}>
-      <div
-        className="container"
-        style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}
-      >
-        <Link
-          to="/catalog"
-          style={{
-            display: "inline-block",
-            marginBottom: "20px",
-            color: "#3b82f6",
-            textDecoration: "none",
-          }}
-        >
-          &larr; Вернуться в каталог
+    <section className={styles.productPage}>
+      <div className={styles.container}>
+        <Link to="/catalog" className={styles.backLink}>
+          ← Вернуться в каталог
         </Link>
 
-        <div
-          className={styles.productDetailLayout}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "30px",
-            backgroundColor: "white",
-            padding: "30px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-          }}
-        >
-          {/* Левая часть: Изображение */}
-          <div className={styles.productDetailImage}>
-            <img
-              src={product.image}
-              alt={product.name}
-              style={{ width: "100%", height: "auto", borderRadius: "8px" }}
-            />
+        <div className={styles.productDetailLayout}>
+          {/* Левая часть: Изображение и галерея */}
+          <div>
+            <div className={styles.productDetailImage}>
+              <img
+                src={productImages[selectedImage]}
+                alt={product.name}
+              />
+            </div>
+            {productImages.length > 1 && (
+              <div className={styles.imageGallery}>
+                {productImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`${styles.galleryThumb} ${
+                      selectedImage === index ? styles.active : ""
+                    }`}
+                    onClick={() => setSelectedImage(index)}
+                  >
+                    <img src={img} alt={`${product.name} - вид ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Правая часть: Описание и характеристики */}
           <div className={styles.productDetailInfo}>
-            <h1
-              style={{
-                fontSize: "2rem",
-                fontWeight: 700,
-                color: "#1f2937",
-                marginBottom: "10px",
-              }}
-            >
-              {product.name}
-            </h1>
+            <h1 className={styles.productTitle}>{product.name}</h1>
 
-            <p
-              style={{
-                color: "#6b7280",
-                marginBottom: "20px",
-                fontSize: "1.125rem",
-              }}
-            >
-              {product.description}
-            </p>
+            <p className={styles.productDescription}>{product.description}</p>
 
-            <div style={{ marginBottom: "20px" }}>
-              <span
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 700,
-                  color: "#10b981",
-                }}
-              >
-                {product.price}
-              </span>
+            <div className={styles.priceSection}>
+              <p className={styles.price}>{product.price}</p>
               <span
                 className={`${styles.status} ${
                   product.inStock ? styles.inStock : styles.outOfStock
                 }`}
-                style={{ marginLeft: "15px" }}
               >
                 {product.inStock ? "В наличии" : "Под заказ"}
               </span>
             </div>
 
-            <h3
-              style={{
-                fontSize: "1.25rem",
-                fontWeight: 600,
-                color: "#1f2937",
-                marginTop: "20px",
-                marginBottom: "10px",
-              }}
-            >
-              Подробное описание
-            </h3>
-            <p style={{ color: "#4b5563", lineHeight: "1.6" }}>
-              {product.fullDescription}
-            </p>
+            {product.fullDescription && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Подробное описание</h3>
+                <p className={styles.sectionContent}>
+                  {product.fullDescription}
+                </p>
+              </div>
+            )}
 
-            <h3
-              style={{
-                fontSize: "1.25rem",
-                fontWeight: 600,
-                color: "#1f2937",
-                marginTop: "20px",
-                marginBottom: "10px",
-              }}
-            >
-              Основные характеристики
-            </h3>
-            <ul
-              style={{
-                listStyleType: "disc",
-                marginLeft: "20px",
-                color: "#4b5563",
-              }}
-            >
-              {product.features.map((feature, index) => (
-                <li key={index} style={{ marginBottom: "5px" }}>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+            {product.features && product.features.length > 0 && (
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Основные характеристики</h3>
+                <ul className={styles.featuresList}>
+                  {product.features.map((feature, index) => (
+                    <li key={index} className={styles.featureItem}>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-            {/* Замена кнопки "Оставить заявку" на кнопку "Выбрать/Убрать" */}
             <button
-              style={{
-                marginTop: "30px",
-                padding: "1rem 2rem",
-                border: "none",
-                borderRadius: "8px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "background-color 0.2s",
-                backgroundColor: isSelected ? "#ef4444" : "#3b82f6", // Красный если выбран, синий если нет
-                color: "white",
-              }}
+              className={`${styles.actionButton} ${
+                isSelected
+                  ? styles.actionButtonDanger
+                  : styles.actionButtonPrimary
+              }`}
               onClick={handleSelectClick}
             >
               {isSelected ? "Убрать из заявки" : "Добавить в заявку"}

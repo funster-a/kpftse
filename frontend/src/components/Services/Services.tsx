@@ -38,7 +38,17 @@ const Services: React.FC = () => {
             <div key={index} className={styles.serviceCard}>
               <h3 className={styles.serviceTitle}>{service.title}</h3>
               <p className={styles.serviceDescription}>{service.description}</p>
-              <a href="#form" className={styles.serviceLink}>
+              <a
+                href="#contact"
+                className={styles.serviceLink}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const contactSection = document.getElementById("contact");
+                  if (contactSection) {
+                    contactSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+              >
                 Получить консультацию
               </a>
             </div>

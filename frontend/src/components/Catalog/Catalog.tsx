@@ -13,6 +13,8 @@ export interface Product {
   description: string;
   price: string;
   inStock: boolean;
+  fullDescription?: string;
+  features?: string[];
 }
 
 interface OrderForm {
@@ -447,11 +449,121 @@ const Catalog: React.FC<CatalogProps> = ({
           </div>
         )}
 
-        {/* Модальное окно заявки (без существенных изменений, использует пропс selectedProducts) */}
+        {/* Модальное окно заявки */}
         {isModalOpen && (
-          <div className={styles.modalOverlay}>
+          <div
+            className={styles.modalOverlay}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsModalOpen(false);
+              }
+            }}
+          >
             <div className={styles.modal}>
-              {/* ... (остальной код модального окна) */}
+              <div className={styles.modalHeader}>
+                <h2>Отправить заявку</h2>
+                <button
+                  className={styles.closeButton}
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  ×
+                </button>
+              </div>
+
+              <form className={styles.modalForm} onSubmit={handleSubmit}>
+                <div className={styles.selectedProducts}>
+                  <h3>Выбранные товары ({selectedProducts.length})</h3>
+                  <div className={styles.productsList}>
+                    {selectedProducts.map((product) => (
+                      <div key={product.id} className={styles.selectedProduct}>
+                        <span>{product.name}</span>
+                        <span>{product.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="name">Ваше имя *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="phone">Телефон *</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="company">Компания</label>
+                  <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="comment">Комментарий</label>
+                  <textarea
+                    id="comment"
+                    name="comment"
+                    value={formData.comment}
+                    onChange={handleChange}
+                    rows={4}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button
+                    type="button"
+                    className={styles.cancelButton}
+                    onClick={() => setIsModalOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Отправка..." : "Отправить заявку"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

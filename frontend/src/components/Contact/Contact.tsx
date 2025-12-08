@@ -23,7 +23,7 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <section id="form" className={styles.contact}>
+    <section id="contact" className={styles.contact}>
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.formSection}>
