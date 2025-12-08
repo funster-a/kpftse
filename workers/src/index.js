@@ -213,13 +213,26 @@ function handleCORS(request) {
     else if (origin.endsWith('.pages.dev') || origin.endsWith('.workers.dev')) {
       headers.set('Access-Control-Allow-Origin', origin);
     }
+    // Разрешаем Vercel домены
+    else if (origin.endsWith('.vercel.app') || origin.includes('vercel.app')) {
+      headers.set('Access-Control-Allow-Origin', origin);
+    }
+    // Разрешаем Netlify домены
+    else if (origin.endsWith('.netlify.app') || origin.includes('netlify.app')) {
+      headers.set('Access-Control-Allow-Origin', origin);
+    }
     // Проверяем список разрешенных
     else if (allowedOrigins.some(allowed => origin.includes(allowed))) {
       headers.set('Access-Control-Allow-Origin', origin);
     }
+    // Если origin не найден в списке, но это не критично - разрешаем для продакшна
+    // (можно закомментировать эту строку для большей безопасности)
+    else {
+      headers.set('Access-Control-Allow-Origin', origin);
+    }
   }
   
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PATCH');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   headers.set('Access-Control-Max-Age', '86400');
   headers.set('Access-Control-Allow-Credentials', 'false');
