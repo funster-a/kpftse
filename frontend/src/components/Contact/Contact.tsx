@@ -19,7 +19,8 @@ const Contact: React.FC = () => {
     setSubmitStatus({ type: null, message: '' });
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      // Для Cloudflare Workers используйте: https://kpftse-telegram-api.your-subdomain.workers.dev
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
       const response = await fetch(`${API_URL}/api/contact`, {
         method: 'POST',
         headers: {
