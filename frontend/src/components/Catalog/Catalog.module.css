@@ -2,19 +2,6 @@
   padding: 80px 0;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   min-height: 100vh;
-  position: relative;
-}
-
-.catalog::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #10b981, #3b82f6);
-  background-size: 200% 100%;
-  animation: gradientShift 3s ease infinite;
 }
 
 @keyframes gradientShift {

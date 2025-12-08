@@ -13,7 +13,17 @@ const Hero: React.FC = () => {
             Отечественный товаропроизводитель с традиционным опытом производства
             и современными инновационными методами
           </p>
-          <a href="#form" className={styles.cta}>
+          <a
+            href="#contact"
+            className={styles.cta}
+            onClick={(e) => {
+              e.preventDefault();
+              const contactSection = document.getElementById("contact");
+              if (contactSection) {
+                contactSection.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
+          >
             Получить консультацию
           </a>
         </div>

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Header.module.css";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <header className={styles.header}>
@@ -47,7 +48,31 @@ const Header: React.FC = () => {
               </a>
             </div>
           </div>
-          <a href="/3" onClick={() => setIsMenuOpen(false)}>
+          <a
+            href="#contact"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsMenuOpen(false);
+              // Если мы на главной странице, просто скроллим
+              if (location.pathname === "/") {
+                const contactSection = document.getElementById("contact");
+                if (contactSection) {
+                  contactSection.scrollIntoView({ behavior: "smooth" });
+                }
+              } else {
+                // Если на другой странице, переходим на главную с хэшем
+                navigate("/", { replace: false });
+                // Используем setTimeout чтобы дать время для навигации
+                setTimeout(() => {
+                  window.location.hash = "#contact";
+                  const contactSection = document.getElementById("contact");
+                  if (contactSection) {
+                    contactSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }, 100);
+              }
+            }}
+          >
             Контакты
           </a>
         </nav>
