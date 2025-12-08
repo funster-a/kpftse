@@ -7,10 +7,54 @@ const Contact: React.FC = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: formData.phone,
+          message: formData.message,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Заявка успешно отправлена! Менеджер свяжется с вами в ближайшее время.',
+        });
+        // Очистка формы
+        setFormData({
+          phone: '+7',
+          message: '',
+        });
+      } else {
+        throw new Error(result.error || 'Ошибка при отправке заявки');
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке заявки:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -48,8 +92,27 @@ const Contact: React.FC = () => {
                 placeholder="Ваше сообщение"
                 rows={4}
               />
-              <button type="submit" className={styles.submitButton}>
-                Отправить
+              {submitStatus.type && (
+                <div
+                  style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    backgroundColor:
+                      submitStatus.type === 'success' ? '#d1fae5' : '#fee2e2',
+                    color: submitStatus.type === 'success' ? '#065f46' : '#991b1b',
+                    fontSize: '14px',
+                  }}
+                >
+                  {submitStatus.message}
+                </div>
+              )}
+              <button
+                type="submit"
+                className={styles.submitButton}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Отправка...' : 'Отправить'}
               </button>
             </form>
           </div>

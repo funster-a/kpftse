@@ -213,8 +213,9 @@ const Catalog: React.FC<CatalogProps> = ({
         })),
       };
 
-      // TODO: Заменить на ваш бэкенд URL
-      const response = await fetch("http://localhost:8080/api/orders", {
+      // Отправка заявки на backend API
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
