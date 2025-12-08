@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // Импортируем useState
+import { useState } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
@@ -7,16 +7,7 @@ import CatalogPage from "./pages/CatalogPage";
 import { HomePage } from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import ProductPage from "./pages/ProductPage";
-
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  image: string;
-  description: string;
-  price: string;
-  inStock: boolean;
-}
+import type { Product } from "./components/Catalog/Catalog";
 
 function App() {
   // 1. Создаем состояние для хранения выбранных товаров (корзина/заявка)
@@ -37,7 +28,7 @@ function App() {
   };
 
   return (
-    <Router basename="/kpftse">
+    <Router>
       <div className="App">
         <Header />
         <main>
