@@ -10,21 +10,36 @@ Full-stack проект для компании Техснабэлектрикс
 
 ## Быстрый старт
 
-### Frontend
+### Локальная разработка
+
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### Backend (Cloudflare Workers)
+**Backend (Cloudflare Workers):**
 ```bash
 cd workers
 npm install
 npm run deploy
 ```
 
-Подробная документация в `workers/README.md`
+### Деплой в продакшн
+
+**Рекомендуется:** Cloudflare Pages (бесплатно, интеграция с Workers)
+
+1. Подключите GitHub репозиторий к Cloudflare Pages
+2. Настройки:
+   - Framework: Vite
+   - Build command: `npm run build`
+   - Build output: `dist`
+   - Root directory: `frontend`
+3. Добавьте переменную окружения:
+   - `VITE_API_URL` = `https://kpftse-telegram-api.300amiri.workers.dev`
+
+Подробная инструкция в `DEPLOY.md`
 
 ## Основные возможности
 

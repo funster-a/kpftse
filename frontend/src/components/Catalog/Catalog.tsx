@@ -270,14 +270,18 @@ const Catalog: React.FC<CatalogProps> = ({
       }
     } catch (error) {
       console.error("Ошибка при отправке заявки:", error);
-      console.error("Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
       
-      // Показываем более понятное сообщение об ошибке
-      const errorMessage = error.message || "Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам.";
+      let errorMessage = "Произошла ошибка. Пожалуйста, попробуйте еще раз или позвоните нам.";
+      
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+        errorMessage = error.message || errorMessage;
+      }
+      
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
